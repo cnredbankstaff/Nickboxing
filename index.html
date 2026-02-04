@@ -1,0 +1,1124 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Championship Boxing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;700&display=swap');
+    
+    .game-title {
+      font-family: 'Bebas Neue', sans-serif;
+      text-shadow: 4px 4px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+    }
+    
+    .boxer {
+      transition: transform 0.1s ease;
+    }
+    
+    .punch-effect {
+      animation: punchFlash 0.15s ease-out;
+    }
+    
+    @keyframes punchFlash {
+      0% { filter: brightness(2); }
+      100% { filter: brightness(1); }
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+    
+    .shake {
+      animation: shake 0.3s ease-in-out;
+    }
+    
+    @keyframes knockdown {
+      0% { transform: rotate(0deg) translateY(0); }
+      100% { transform: rotate(90deg) translateY(50px); }
+    }
+    
+    .knocked-down {
+      animation: knockdown 0.5s ease-in forwards;
+    }
+    
+    @keyframes dreamPunchCharge {
+      0% { filter: hue-rotate(0deg) brightness(1); }
+      50% { filter: hue-rotate(180deg) brightness(1.5); }
+      100% { filter: hue-rotate(360deg) brightness(1); }
+    }
+    
+    .dream-ready {
+      animation: dreamPunchCharge 0.5s ease-in-out infinite;
+    }
+    
+    .ring-rope {
+      background: linear-gradient(90deg, #dc2626 0%, #ef4444 50%, #dc2626 100%);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .ring-floor {
+      background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 50%, #1e3a5f 100%);
+    }
+    
+    .glove {
+      border-radius: 50%;
+      box-shadow: inset -3px -3px 6px rgba(0,0,0,0.4), inset 3px 3px 6px rgba(255,255,255,0.2);
+    }
+    
+    @keyframes charging {
+      0% { transform: translateX(0); }
+      50% { transform: translateX(-20px); }
+      100% { transform: translateX(200px); }
+    }
+    
+    .charging-attack {
+      animation: charging 0.8s ease-in-out;
+    }
+    
+    @keyframes drinkEnergy {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(-45deg); }
+      100% { transform: rotate(0deg); }
+    }
+    
+    .drinking {
+      animation: drinkEnergy 1s ease-in-out;
+    }
+    
+    @keyframes comboHits {
+      0%, 100% { transform: translateX(0); }
+      10% { transform: translateX(-3px); }
+      20% { transform: translateX(3px); }
+      30% { transform: translateX(-3px); }
+      40% { transform: translateX(3px); }
+      50% { transform: translateX(-3px); }
+      60% { transform: translateX(3px); }
+      70% { transform: translateX(-3px); }
+      80% { transform: translateX(3px); }
+      90% { transform: translateX(-3px); }
+    }
+    
+    .combo-receiving {
+      animation: comboHits 0.5s ease-in-out;
+    }
+    
+    .menu-btn {
+      font-family: 'Oswald', sans-serif;
+      transition: all 0.2s ease;
+    }
+    
+    .menu-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255,255,255,0.3);
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-gray-900 overflow-hidden">
+  <div id="app" class="h-full w-full"><!-- Main Menu -->
+   <div id="main-menu" class="h-full w-full flex flex-col items-center justify-center bg-gradient-to-b from-gray-900 via-red-900 to-gray-900">
+    <h1 id="game-title" class="game-title text-6xl md:text-8xl text-yellow-400 mb-8">CHAMPIONSHIP BOXING</h1>
+    <div class="text-white text-lg mb-8 text-center px-4">
+     <p>🥊 Defeat all opponents to become the champion! 🥊</p>
+    </div>
+    <div class="flex flex-col gap-4 w-64"><button onclick="showDifficultySelect()" class="menu-btn bg-green-600 hover:bg-green-500 text-white text-2xl py-4 px-8 rounded-lg"> START GAME </button> <button onclick="showControls()" class="menu-btn bg-blue-600 hover:bg-blue-500 text-white text-xl py-3 px-6 rounded-lg"> CONTROLS </button>
+    </div>
+   </div><!-- Difficulty Select -->
+   <div id="difficulty-menu" class="h-full w-full hidden flex-col items-center justify-center bg-gradient-to-b from-gray-900 via-blue-900 to-gray-900">
+    <h2 class="game-title text-5xl text-yellow-400 mb-8">SELECT CUP</h2>
+    <div class="flex flex-col gap-4 w-72"><button onclick="selectDifficulty('minor')" class="menu-btn bg-green-600 hover:bg-green-500 text-white text-xl py-4 px-8 rounded-lg"> 🏆 MINOR CUP<br><span class="text-sm">Easier opponents</span> </button> <button onclick="selectDifficulty('major')" class="menu-btn bg-yellow-600 hover:bg-yellow-500 text-white text-xl py-4 px-8 rounded-lg"> 🏆 MAJOR CUP<br><span class="text-sm">Medium challenge</span> </button> <button onclick="selectDifficulty('world')" class="menu-btn bg-red-600 hover:bg-red-500 text-white text-xl py-4 px-8 rounded-lg"> 🏆 WORLD CUP<br><span class="text-sm">Ultimate challenge</span> </button> <button onclick="backToMenu()" class="menu-btn bg-gray-600 hover:bg-gray-500 text-white text-lg py-2 px-6 rounded-lg mt-4"> BACK </button>
+    </div>
+   </div><!-- Dream Punch Select -->
+   <div id="dream-menu" class="h-full w-full hidden flex-col items-center justify-center bg-gradient-to-b from-gray-900 via-purple-900 to-gray-900">
+    <h2 class="game-title text-5xl text-yellow-400 mb-4">SELECT DREAM PUNCH</h2>
+    <p class="text-white mb-6 text-center px-4">Fill your combo meter by hitting opponents, then press UP to unleash!</p>
+    <div class="flex flex-col gap-4 w-80"><button onclick="selectDreamPunch('ko_express')" class="menu-btn bg-red-600 hover:bg-red-500 text-white text-lg py-4 px-6 rounded-lg text-left"> ⚡ KO EXPRESS<br><span class="text-sm text-gray-200">Charge forward with a devastating uppercut!</span> </button> <button onclick="selectDreamPunch('champions_slam')" class="menu-btn bg-orange-600 hover:bg-orange-500 text-white text-lg py-4 px-6 rounded-lg text-left"> 💪 CHAMPION'S SLAM<br><span class="text-sm text-gray-200">Jump high and deliver an overhead smash!</span> </button> <button onclick="selectDreamPunch('jawbreaker')" class="menu-btn bg-purple-600 hover:bg-purple-500 text-white text-lg py-4 px-6 rounded-lg text-left"> 🌀 JAWBREAKER<br><span class="text-sm text-gray-200">Spinning kick, backhand, and clothesline combo!</span> </button>
+    </div>
+   </div><!-- Controls Screen -->
+   <div id="controls-menu" class="h-full w-full hidden flex-col items-center justify-center bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 p-8">
+    <h2 class="game-title text-5xl text-yellow-400 mb-8">CONTROLS</h2>
+    <div class="bg-gray-800 rounded-xl p-6 max-w-md text-white">
+     <div class="grid grid-cols-2 gap-4 text-lg">
+      <div class="text-yellow-400">
+       WASD / Arrow Keys
+      </div>
+      <div>
+       Move
+      </div>
+      <div class="text-yellow-400">
+       SPACE
+      </div>
+      <div>
+       Punch
+      </div>
+      <div class="text-yellow-400">
+       DOWN Arrow
+      </div>
+      <div>
+       Duck
+      </div>
+      <div class="text-yellow-400">
+       UP Arrow
+      </div>
+      <div>
+       Kick / Dream Punch
+      </div>
+     </div>
+     <div class="mt-6 text-sm text-gray-300">
+      <p>💡 Fill your combo meter to unlock your Dream Punch!</p>
+      <p>💡 Knock down opponents 3 times to win!</p>
+      <p>💡 Watch for opponent special moves!</p>
+     </div>
+    </div><button onclick="backToMenu()" class="menu-btn bg-gray-600 hover:bg-gray-500 text-white text-lg py-3 px-8 rounded-lg mt-8"> BACK </button>
+   </div><!-- Pre-Fight Screen -->
+   <div id="prefight-screen" class="h-full w-full hidden flex-col items-center justify-center bg-gradient-to-b from-gray-900 via-red-900 to-gray-900">
+    <h2 class="game-title text-4xl text-white mb-4">ROUND <span id="fight-number">1</span></h2>
+    <div class="flex items-center justify-center gap-8 mb-8">
+     <div class="text-center">
+      <div class="w-32 h-32 bg-green-500 rounded-full flex items-center justify-center text-6xl mb-2">
+       🥊
+      </div>
+      <div class="text-white text-xl font-bold">
+       YOU
+      </div>
+      <div class="text-green-400">
+       100 HP
+      </div>
+     </div>
+     <div class="text-yellow-400 text-4xl font-bold">
+      VS
+     </div>
+     <div class="text-center">
+      <div id="opponent-preview" class="w-32 h-32 rounded-full flex items-center justify-center text-6xl mb-2"></div>
+      <div id="opponent-name-preview" class="text-white text-xl font-bold"></div>
+      <div id="opponent-hp-preview" class="text-red-400"></div>
+     </div>
+    </div>
+    <div id="opponent-gimmick-preview" class="text-gray-300 text-center mb-8 px-4 max-w-md"></div><button onclick="startFight()" class="menu-btn bg-red-600 hover:bg-red-500 text-white text-2xl py-4 px-12 rounded-lg animate-pulse"> FIGHT! </button>
+   </div><!-- Game Arena -->
+   <div id="game-arena" class="h-full w-full hidden relative overflow-hidden"><!-- Background -->
+    <div class="absolute inset-0 bg-gradient-to-b from-gray-800 via-gray-900 to-black"><!-- Crowd silhouettes -->
+     <div class="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-gray-700 to-transparent opacity-50 flex items-end justify-center gap-2 px-4"><span class="text-2xl">👥</span><span class="text-2xl">👥</span><span class="text-2xl">👥</span> <span class="text-2xl">👥</span><span class="text-2xl">👥</span><span class="text-2xl">👥</span>
+     </div>
+    </div><!-- Boxing Ring -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-3xl"><!-- Ring posts -->
+     <div class="absolute -top-32 -left-4 w-8 h-40 bg-gradient-to-b from-gray-400 to-gray-600 rounded-t-lg"></div>
+     <div class="absolute -top-32 -right-4 w-8 h-40 bg-gradient-to-b from-gray-400 to-gray-600 rounded-t-lg"></div><!-- Ring ropes -->
+     <div class="absolute -top-28 left-0 right-0 h-3 ring-rope rounded-full"></div>
+     <div class="absolute -top-20 left-0 right-0 h-3 ring-rope rounded-full"></div>
+     <div class="absolute -top-12 left-0 right-0 h-3 ring-rope rounded-full"></div><!-- Ring floor -->
+     <div class="ring-floor h-48 rounded-lg border-4 border-gray-600 relative"><!-- Ring canvas texture -->
+      <div class="absolute inset-2 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 rounded opacity-80"></div><!-- Player -->
+      <div id="player" class="boxer absolute bottom-4 left-8 flex flex-col items-center">
+       <div class="relative"><!-- Player head -->
+        <div class="w-16 h-16 bg-gradient-to-b from-amber-200 to-amber-300 rounded-full relative">
+         <div class="absolute top-4 left-3 w-2 h-2 bg-gray-800 rounded-full"></div>
+         <div class="absolute top-4 right-3 w-2 h-2 bg-gray-800 rounded-full"></div>
+         <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-4 h-1 bg-red-400 rounded-full"></div>
+        </div><!-- Player body -->
+        <div class="w-12 h-16 bg-gradient-to-b from-green-700 to-green-800 rounded-lg mx-auto -mt-2 relative">
+         <div class="absolute top-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-500 rounded"></div>
+        </div><!-- Player gloves -->
+        <div id="player-left-glove" class="glove absolute -left-6 top-8 w-10 h-10 bg-gradient-to-br from-green-400 to-green-600"></div>
+        <div id="player-right-glove" class="glove absolute -right-6 top-8 w-10 h-10 bg-gradient-to-br from-green-400 to-green-600"></div>
+       </div>
+      </div><!-- Opponent -->
+      <div id="opponent" class="boxer absolute bottom-4 right-8 flex flex-col items-center">
+       <div class="relative"><!-- Opponent head -->
+        <div id="opponent-head" class="w-20 h-20 bg-gradient-to-b from-amber-300 to-amber-400 rounded-full relative">
+         <div class="absolute top-5 left-4 w-3 h-3 bg-gray-800 rounded-full"></div>
+         <div class="absolute top-5 right-4 w-3 h-3 bg-gray-800 rounded-full"></div>
+         <div class="absolute bottom-5 left-1/2 -translate-x-1/2 w-6 h-2 bg-red-500 rounded-full"></div>
+        </div><!-- Opponent body -->
+        <div id="opponent-body" class="w-16 h-20 bg-gradient-to-b from-red-700 to-red-800 rounded-lg mx-auto -mt-2">
+         <div class="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-red-500 rounded"></div>
+        </div><!-- Opponent gloves -->
+        <div id="opponent-left-glove" class="glove absolute -left-7 top-10 w-12 h-12 bg-gradient-to-br from-red-400 to-red-600"></div>
+        <div id="opponent-right-glove" class="glove absolute -right-7 top-10 w-12 h-12 bg-gradient-to-br from-red-400 to-red-600"></div><!-- Extra rope gloves (for Rope Gloves gimmick) -->
+        <div id="rope-gloves" class="hidden">
+         <div class="absolute -left-12 top-20 w-8 h-8 bg-gradient-to-br from-red-400 to-red-600 rounded-full"></div>
+         <div class="absolute -right-12 top-20 w-8 h-8 bg-gradient-to-br from-red-400 to-red-600 rounded-full"></div>
+        </div><!-- Energy drink (for Energy gimmick) -->
+        <div id="energy-drink" class="hidden absolute -right-16 top-0 text-3xl">
+         🥤
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- HUD -->
+    <div class="absolute top-4 left-4 right-4 flex justify-between items-start"><!-- Player stats -->
+     <div class="bg-black/70 rounded-lg p-3 min-w-[180px]">
+      <div class="text-green-400 font-bold text-lg mb-1">
+       YOU
+      </div>
+      <div class="flex items-center gap-2 mb-2">
+       <div class="text-white text-sm">
+        HP:
+       </div>
+       <div class="flex-1 h-4 bg-gray-700 rounded-full overflow-hidden">
+        <div id="player-hp-bar" class="h-full bg-gradient-to-r from-green-500 to-green-400 transition-all duration-300" style="width: 100%"></div>
+       </div>
+       <div id="player-hp-text" class="text-white text-sm">
+        100
+       </div>
+      </div>
+      <div class="flex items-center gap-2">
+       <div class="text-yellow-400 text-sm">
+        COMBO:
+       </div>
+       <div class="flex-1 h-3 bg-gray-700 rounded-full overflow-hidden">
+        <div id="combo-meter" class="h-full bg-gradient-to-r from-yellow-500 to-orange-400 transition-all duration-300" style="width: 0%"></div>
+       </div>
+      </div>
+      <div id="dream-ready-indicator" class="hidden text-yellow-400 text-xs mt-1 animate-pulse">
+       ⚡ DREAM PUNCH READY! ⚡
+      </div>
+     </div><!-- Match info -->
+     <div class="bg-black/70 rounded-lg p-3 text-center">
+      <div class="text-yellow-400 font-bold" id="cup-display">
+       MINOR CUP
+      </div>
+      <div class="text-white text-2xl font-bold" id="knockdown-display">
+       0 - 0
+      </div>
+      <div class="text-gray-400 text-sm">
+       Knockdowns
+      </div>
+     </div><!-- Opponent stats -->
+     <div class="bg-black/70 rounded-lg p-3 min-w-[180px]">
+      <div id="opponent-name" class="text-red-400 font-bold text-lg mb-1">
+       OPPONENT
+      </div>
+      <div class="flex items-center gap-2 mb-1">
+       <div class="text-white text-sm">
+        HP:
+       </div>
+       <div class="flex-1 h-4 bg-gray-700 rounded-full overflow-hidden">
+        <div id="opponent-hp-bar" class="h-full bg-gradient-to-r from-red-500 to-red-400 transition-all duration-300" style="width: 100%"></div>
+       </div>
+       <div id="opponent-hp-text" class="text-white text-sm">
+        150
+       </div>
+      </div>
+      <div id="gimmick-indicator" class="text-xs text-purple-400 mt-1"></div>
+     </div>
+    </div><!-- Action text -->
+    <div id="action-text" class="absolute top-1/3 left-1/2 -translate-x-1/2 text-4xl font-bold text-yellow-400 game-title hidden"></div><!-- Pause overlay -->
+    <div id="pause-overlay" class="absolute inset-0 bg-black/80 hidden flex-col items-center justify-center">
+     <h2 class="game-title text-5xl text-yellow-400 mb-8">PAUSED</h2><button onclick="resumeGame()" class="menu-btn bg-green-600 hover:bg-green-500 text-white text-xl py-3 px-8 rounded-lg mb-4">RESUME</button> <button onclick="quitToMenu()" class="menu-btn bg-red-600 hover:bg-red-500 text-white text-xl py-3 px-8 rounded-lg">QUIT</button>
+    </div>
+   </div><!-- Victory Screen -->
+   <div id="victory-screen" class="h-full w-full hidden flex-col items-center justify-center bg-gradient-to-b from-yellow-900 via-yellow-700 to-yellow-900">
+    <h1 class="game-title text-6xl text-yellow-400 mb-4">🏆 CHAMPION! 🏆</h1>
+    <p id="victory-message" class="text-white text-xl mb-8"></p><button onclick="backToMenu()" class="menu-btn bg-green-600 hover:bg-green-500 text-white text-2xl py-4 px-8 rounded-lg"> PLAY AGAIN </button>
+   </div><!-- Defeat Screen -->
+   <div id="defeat-screen" class="h-full w-full hidden flex-col items-center justify-center bg-gradient-to-b from-gray-900 via-red-900 to-gray-900">
+    <h1 class="game-title text-6xl text-red-500 mb-4">KNOCKED OUT!</h1>
+    <p id="defeat-message" class="text-white text-xl mb-8"></p>
+    <div class="flex gap-4"><button onclick="retryFight()" class="menu-btn bg-yellow-600 hover:bg-yellow-500 text-white text-xl py-3 px-8 rounded-lg"> RETRY </button> <button onclick="backToMenu()" class="menu-btn bg-gray-600 hover:bg-gray-500 text-white text-xl py-3 px-8 rounded-lg"> QUIT </button>
+    </div>
+   </div><!-- Round Win Screen -->
+   <div id="round-win-screen" class="h-full w-full hidden flex-col items-center justify-center bg-gradient-to-b from-green-900 via-green-700 to-green-900">
+    <h1 class="game-title text-5xl text-yellow-400 mb-4">VICTORY!</h1>
+    <p id="round-win-message" class="text-white text-xl mb-8"></p><button onclick="nextOpponent()" class="menu-btn bg-green-600 hover:bg-green-500 text-white text-2xl py-4 px-8 rounded-lg"> NEXT OPPONENT </button>
+   </div>
+  </div>
+  <script>
+    // Game configuration
+    const defaultConfig = {
+      game_title: "CHAMPIONSHIP BOXING"
+    };
+    
+    let config = { ...defaultConfig };
+    
+    // Element SDK integration
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (newConfig) => {
+          config = { ...defaultConfig, ...newConfig };
+          const titleEl = document.getElementById('game-title');
+          if (titleEl) titleEl.textContent = config.game_title || defaultConfig.game_title;
+        },
+        mapToCapabilities: (cfg) => ({
+          recolorables: [],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (cfg) => new Map([
+          ["game_title", cfg.game_title || defaultConfig.game_title]
+        ])
+      });
+    }
+    
+    // Game state
+    let gameState = {
+      difficulty: 'minor',
+      dreamPunch: 'ko_express',
+      currentOpponent: 0,
+      playerHP: 100,
+      opponentHP: 150,
+      opponentMaxHP: 150,
+      playerKnockdowns: 0,
+      opponentKnockdowns: 0,
+      comboMeter: 0,
+      isPaused: false,
+      isInFight: false,
+      playerX: 80,
+      playerY: 0,
+      opponentX: 400,
+      isDucking: false,
+      isPunching: false,
+      isKicking: false,
+      canAct: true,
+      opponentCanAct: true,
+      opponentIsCharging: false,
+      opponentIsDrinking: false,
+      opponentIsCombo: false,
+      opponentKnockedDown: false,
+      playerKnockedDown: false
+    };
+    
+    // Opponents with gimmicks
+    const opponents = [
+      {
+        name: "ROPE RUNNER",
+        color: "red",
+        gimmick: "rope_gloves",
+        description: "Has extra gloves on ropes that swing at you when he falls!",
+        emoji: "🥊",
+        baseHP: 150
+      },
+      {
+        name: "ENERGY EDDIE",
+        color: "blue", 
+        gimmick: "energy_drink",
+        description: "Can recharge health by drinking an energy drink!",
+        emoji: "🥤",
+        baseHP: 170
+      },
+      {
+        name: "BULL CHARGER",
+        color: "orange",
+        gimmick: "charge_attack",
+        description: "Charges at high speed! Punch him right before impact for instant KO!",
+        emoji: "🐂",
+        baseHP: 180
+      },
+      {
+        name: "IRON CHIN",
+        color: "gray",
+        gimmick: "no_knockdown",
+        description: "25% chance to resist knockdown! Tough as nails!",
+        emoji: "🗿",
+        baseHP: 200
+      },
+      {
+        name: "COMBO KING",
+        color: "purple",
+        gimmick: "combo_attack",
+        description: "Can unleash 100 hits in 5 seconds! Rare but devastating!",
+        emoji: "👑",
+        baseHP: 220
+      }
+    ];
+    
+    // Difficulty multipliers
+    const difficultySettings = {
+      minor: { hpMultiplier: 1, damageMultiplier: 0.8, aiSpeed: 0.7 },
+      major: { hpMultiplier: 1.3, damageMultiplier: 1, aiSpeed: 1 },
+      world: { hpMultiplier: 1.6, damageMultiplier: 1.3, aiSpeed: 1.3 }
+    };
+    
+    // Input handling
+    const keys = {};
+    
+    document.addEventListener('keydown', (e) => {
+      keys[e.key.toLowerCase()] = true;
+      keys[e.code] = true;
+      
+      if (gameState.isInFight && !gameState.isPaused) {
+        if (e.code === 'Space') {
+          e.preventDefault();
+          playerPunch();
+        }
+        if (e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') {
+          e.preventDefault();
+          playerKick();
+        }
+        if (e.key === 'ArrowDown' || e.key.toLowerCase() === 's') {
+          e.preventDefault();
+          gameState.isDucking = true;
+          updatePlayerVisuals();
+        }
+        if (e.key === 'Escape') {
+          togglePause();
+        }
+      }
+    });
+    
+    document.addEventListener('keyup', (e) => {
+      keys[e.key.toLowerCase()] = false;
+      keys[e.code] = false;
+      
+      if (e.key === 'ArrowDown' || e.key.toLowerCase() === 's') {
+        gameState.isDucking = false;
+        updatePlayerVisuals();
+      }
+    });
+    
+    // Screen navigation
+    function showScreen(screenId) {
+      const screens = ['main-menu', 'difficulty-menu', 'dream-menu', 'controls-menu', 'prefight-screen', 'game-arena', 'victory-screen', 'defeat-screen', 'round-win-screen'];
+      screens.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+        if (el) el.classList.remove('flex');
+      });
+      const targetScreen = document.getElementById(screenId);
+      if (targetScreen) {
+        targetScreen.classList.remove('hidden');
+        targetScreen.classList.add('flex');
+      }
+    }
+    
+    function showDifficultySelect() {
+      showScreen('difficulty-menu');
+    }
+    
+    function showControls() {
+      showScreen('controls-menu');
+    }
+    
+    function backToMenu() {
+      gameState.isInFight = false;
+      showScreen('main-menu');
+    }
+    
+    function selectDifficulty(diff) {
+      gameState.difficulty = diff;
+      gameState.currentOpponent = 0;
+      showScreen('dream-menu');
+    }
+    
+    function selectDreamPunch(punch) {
+      gameState.dreamPunch = punch;
+      showPreFight();
+    }
+    
+    function showPreFight() {
+      const opponent = opponents[gameState.currentOpponent];
+      const settings = difficultySettings[gameState.difficulty];
+      const hp = Math.floor(opponent.baseHP * settings.hpMultiplier);
+      
+      document.getElementById('fight-number').textContent = gameState.currentOpponent + 1;
+      document.getElementById('opponent-preview').style.backgroundColor = getColorHex(opponent.color);
+      document.getElementById('opponent-preview').textContent = opponent.emoji;
+      document.getElementById('opponent-name-preview').textContent = opponent.name;
+      document.getElementById('opponent-hp-preview').textContent = hp + ' HP';
+      document.getElementById('opponent-gimmick-preview').textContent = '⚠️ ' + opponent.description;
+      
+      showScreen('prefight-screen');
+    }
+    
+    function getColorHex(colorName) {
+      const colors = {
+        red: '#dc2626',
+        blue: '#2563eb',
+        orange: '#ea580c',
+        gray: '#6b7280',
+        purple: '#9333ea',
+        green: '#16a34a'
+      };
+      return colors[colorName] || '#dc2626';
+    }
+    
+    function startFight() {
+      const opponent = opponents[gameState.currentOpponent];
+      const settings = difficultySettings[gameState.difficulty];
+      
+      gameState.playerHP = 100;
+      gameState.opponentHP = Math.floor(opponent.baseHP * settings.hpMultiplier);
+      gameState.opponentMaxHP = gameState.opponentHP;
+      gameState.playerKnockdowns = 0;
+      gameState.opponentKnockdowns = 0;
+      gameState.comboMeter = 0;
+      gameState.playerX = 80;
+      gameState.opponentX = 400;
+      gameState.isInFight = true;
+      gameState.canAct = true;
+      gameState.opponentCanAct = true;
+      gameState.opponentKnockedDown = false;
+      gameState.playerKnockedDown = false;
+      
+      // Update HUD
+      const cupNames = { minor: 'MINOR CUP', major: 'MAJOR CUP', world: 'WORLD CUP' };
+      document.getElementById('cup-display').textContent = cupNames[gameState.difficulty];
+      document.getElementById('opponent-name').textContent = opponent.name;
+      document.getElementById('gimmick-indicator').textContent = getGimmickText(opponent.gimmick);
+      
+      // Set opponent colors
+      const opponentBody = document.getElementById('opponent-body');
+      const leftGlove = document.getElementById('opponent-left-glove');
+      const rightGlove = document.getElementById('opponent-right-glove');
+      
+      opponentBody.style.background = `linear-gradient(to bottom, ${getColorHex(opponent.color)}, ${getDarkerColor(opponent.color)})`;
+      leftGlove.style.background = `linear-gradient(to bottom right, ${getLighterColor(opponent.color)}, ${getColorHex(opponent.color)})`;
+      rightGlove.style.background = `linear-gradient(to bottom right, ${getLighterColor(opponent.color)}, ${getColorHex(opponent.color)})`;
+      
+      updateHUD();
+      showScreen('game-arena');
+      
+      showActionText('FIGHT!');
+      
+      // Start game loop
+      requestAnimationFrame(gameLoop);
+      
+      // Start AI
+      setTimeout(startOpponentAI, 1500);
+    }
+    
+    function getGimmickText(gimmick) {
+      const texts = {
+        rope_gloves: '🥊 Rope Gloves',
+        energy_drink: '🥤 Energy Boost',
+        charge_attack: '🐂 Charge Attack',
+        no_knockdown: '🗿 Iron Chin',
+        combo_attack: '👑 Combo Master'
+      };
+      return texts[gimmick] || '';
+    }
+    
+    function getDarkerColor(colorName) {
+      const colors = {
+        red: '#991b1b',
+        blue: '#1d4ed8',
+        orange: '#c2410c',
+        gray: '#4b5563',
+        purple: '#7c22ce',
+        green: '#15803d'
+      };
+      return colors[colorName] || '#991b1b';
+    }
+    
+    function getLighterColor(colorName) {
+      const colors = {
+        red: '#f87171',
+        blue: '#60a5fa',
+        orange: '#fb923c',
+        gray: '#9ca3af',
+        purple: '#c084fc',
+        green: '#4ade80'
+      };
+      return colors[colorName] || '#f87171';
+    }
+    
+    function showActionText(text) {
+      const actionText = document.getElementById('action-text');
+      actionText.textContent = text;
+      actionText.classList.remove('hidden');
+      setTimeout(() => actionText.classList.add('hidden'), 1500);
+    }
+    
+    function updateHUD() {
+      const playerHPPercent = Math.max(0, (gameState.playerHP / 100) * 100);
+      const opponentHPPercent = Math.max(0, (gameState.opponentHP / gameState.opponentMaxHP) * 100);
+      
+      document.getElementById('player-hp-bar').style.width = playerHPPercent + '%';
+      document.getElementById('player-hp-text').textContent = Math.max(0, gameState.playerHP);
+      
+      document.getElementById('opponent-hp-bar').style.width = opponentHPPercent + '%';
+      document.getElementById('opponent-hp-text').textContent = Math.max(0, gameState.opponentHP);
+      
+      document.getElementById('combo-meter').style.width = gameState.comboMeter + '%';
+      document.getElementById('knockdown-display').textContent = `${gameState.playerKnockdowns} - ${gameState.opponentKnockdowns}`;
+      
+      const dreamIndicator = document.getElementById('dream-ready-indicator');
+      const player = document.getElementById('player');
+      if (gameState.comboMeter >= 100) {
+        dreamIndicator.classList.remove('hidden');
+        player.classList.add('dream-ready');
+      } else {
+        dreamIndicator.classList.add('hidden');
+        player.classList.remove('dream-ready');
+      }
+    }
+    
+    function updatePlayerVisuals() {
+      const player = document.getElementById('player');
+      if (gameState.isDucking) {
+        player.style.transform = 'scaleY(0.6) translateY(30px)';
+      } else {
+        player.style.transform = 'scaleY(1) translateY(0)';
+      }
+    }
+    
+    // Player actions
+    function playerPunch() {
+      if (!gameState.canAct || gameState.isPunching || gameState.playerKnockedDown) return;
+      
+      gameState.isPunching = true;
+      const rightGlove = document.getElementById('player-right-glove');
+      rightGlove.style.transform = 'translateX(30px)';
+      
+      // Check for hit
+      const distance = Math.abs(gameState.opponentX - gameState.playerX);
+      if (distance < 150 && !gameState.opponentKnockedDown) {
+        // Check if opponent is charging and we counter
+        if (gameState.opponentIsCharging) {
+          // Instant KO on charge counter!
+          showActionText('COUNTER!');
+          opponentKnockdown(true);
+        } else {
+          const damage = 10 + Math.floor(Math.random() * 6); // 10-15 damage
+          damageOpponent(damage);
+          gameState.comboMeter = Math.min(100, gameState.comboMeter + 10);
+        }
+      }
+      
+      setTimeout(() => {
+        rightGlove.style.transform = 'translateX(0)';
+        gameState.isPunching = false;
+      }, 200);
+    }
+    
+    function playerKick() {
+      if (!gameState.canAct || gameState.isKicking || gameState.playerKnockedDown) return;
+      
+      // Check for dream punch
+      if (gameState.comboMeter >= 100) {
+        executeDreamPunch();
+        return;
+      }
+      
+      gameState.isKicking = true;
+      const player = document.getElementById('player');
+      player.style.transform = 'rotate(-15deg)';
+      
+      // Check for hit
+      const distance = Math.abs(gameState.opponentX - gameState.playerX);
+      if (distance < 150 && !gameState.opponentKnockedDown) {
+        const damage = 8 + Math.floor(Math.random() * 5); // 8-12 damage
+        damageOpponent(damage);
+        gameState.comboMeter = Math.min(100, gameState.comboMeter + 5);
+      }
+      
+      setTimeout(() => {
+        player.style.transform = gameState.isDucking ? 'scaleY(0.6) translateY(30px)' : '';
+        gameState.isKicking = false;
+      }, 300);
+    }
+    
+    function executeDreamPunch() {
+      gameState.canAct = false;
+      gameState.comboMeter = 0;
+      
+      const player = document.getElementById('player');
+      const opponent = document.getElementById('opponent');
+      
+      switch(gameState.dreamPunch) {
+        case 'ko_express':
+          showActionText('KO EXPRESS!');
+          player.style.transition = 'transform 0.5s ease-in-out';
+          player.style.transform = 'translateX(200px)';
+          setTimeout(() => {
+            if (!gameState.opponentKnockedDown) {
+              damageOpponent(30);
+              opponent.classList.add('shake');
+              setTimeout(() => opponent.classList.remove('shake'), 300);
+            }
+            player.style.transform = '';
+            gameState.canAct = true;
+          }, 500);
+          break;
+          
+        case 'champions_slam':
+          showActionText("CHAMPION'S SLAM!");
+          player.style.transition = 'transform 0.3s ease-out';
+          player.style.transform = 'translateY(-80px)';
+          setTimeout(() => {
+            player.style.transition = 'transform 0.2s ease-in';
+            player.style.transform = 'translateY(0) translateX(100px)';
+            if (!gameState.opponentKnockedDown) {
+              damageOpponent(30);
+              opponent.classList.add('shake');
+              setTimeout(() => opponent.classList.remove('shake'), 300);
+            }
+            setTimeout(() => {
+              player.style.transform = '';
+              gameState.canAct = true;
+            }, 300);
+          }, 300);
+          break;
+          
+        case 'jawbreaker':
+          showActionText('JAWBREAKER!');
+          player.style.transition = 'transform 0.2s ease';
+          // Spinning kick
+          player.style.transform = 'rotate(360deg)';
+          setTimeout(() => {
+            if (!gameState.opponentKnockedDown) damageOpponent(10);
+            // Backhand
+            player.style.transform = 'rotate(-30deg) translateX(50px)';
+            setTimeout(() => {
+              if (!gameState.opponentKnockedDown) damageOpponent(10);
+              // Clothesline
+              player.style.transform = 'translateX(150px)';
+              setTimeout(() => {
+                if (!gameState.opponentKnockedDown) {
+                  damageOpponent(10);
+                  opponent.classList.add('shake');
+                  setTimeout(() => opponent.classList.remove('shake'), 300);
+                }
+                player.style.transform = '';
+                gameState.canAct = true;
+              }, 200);
+            }, 200);
+          }, 200);
+          break;
+      }
+      
+      updateHUD();
+    }
+    
+    function damageOpponent(damage) {
+      gameState.opponentHP -= damage;
+      
+      const opponent = document.getElementById('opponent');
+      opponent.classList.add('punch-effect');
+      setTimeout(() => opponent.classList.remove('punch-effect'), 150);
+      
+      updateHUD();
+      
+      if (gameState.opponentHP <= 0) {
+        opponentKnockdown();
+      }
+    }
+    
+    function opponentKnockdown(instantKO = false) {
+      const currentOpponent = opponents[gameState.currentOpponent];
+      
+      // Check iron chin gimmick
+      if (currentOpponent.gimmick === 'no_knockdown' && !instantKO && Math.random() < 0.25) {
+        showActionText('BLOCKED!');
+        gameState.opponentHP = 1;
+        updateHUD();
+        return;
+      }
+      
+      gameState.opponentKnockedDown = true;
+      gameState.opponentCanAct = false;
+      gameState.opponentKnockdowns++;
+      
+      const opponent = document.getElementById('opponent');
+      opponent.classList.add('knocked-down');
+      
+      showActionText('KNOCKDOWN!');
+      
+      // Rope gloves gimmick - extra attack while falling
+      if (currentOpponent.gimmick === 'rope_gloves') {
+        document.getElementById('rope-gloves').classList.remove('hidden');
+        setTimeout(() => {
+          if (!gameState.isDucking && !gameState.playerKnockedDown) {
+            gameState.playerHP -= 15;
+            showActionText('ROPE HIT!');
+            updateHUD();
+          }
+          document.getElementById('rope-gloves').classList.add('hidden');
+        }, 400);
+      }
+      
+      updateHUD();
+      
+      // Check for win
+      if (gameState.opponentKnockdowns >= 3 || instantKO) {
+        setTimeout(() => {
+          gameState.isInFight = false;
+          if (gameState.currentOpponent >= opponents.length - 1) {
+            // Won the cup!
+            document.getElementById('victory-message').textContent = `You defeated all ${opponents.length} opponents and won the ${gameState.difficulty.toUpperCase()} CUP!`;
+            showScreen('victory-screen');
+          } else {
+            document.getElementById('round-win-message').textContent = `You defeated ${currentOpponent.name}!`;
+            showScreen('round-win-screen');
+          }
+        }, 1500);
+      } else {
+        // Get back up
+        setTimeout(() => {
+          opponent.classList.remove('knocked-down');
+          gameState.opponentHP = Math.floor(gameState.opponentMaxHP * 0.5);
+          gameState.opponentKnockedDown = false;
+          gameState.opponentCanAct = true;
+          updateHUD();
+        }, 2000);
+      }
+    }
+    
+    // Opponent AI
+    function startOpponentAI() {
+      if (!gameState.isInFight || gameState.isPaused) return;
+      
+      const currentOpponent = opponents[gameState.currentOpponent];
+      const settings = difficultySettings[gameState.difficulty];
+      
+      // Base AI interval
+      const baseInterval = 1500 / settings.aiSpeed;
+      
+      function opponentAction() {
+        if (!gameState.isInFight || gameState.isPaused || !gameState.opponentCanAct || gameState.opponentKnockedDown) {
+          setTimeout(opponentAction, baseInterval);
+          return;
+        }
+        
+        const distance = Math.abs(gameState.opponentX - gameState.playerX);
+        
+        // Gimmick-specific actions
+        if (currentOpponent.gimmick === 'energy_drink' && gameState.opponentHP < gameState.opponentMaxHP * 0.3 && Math.random() < 0.3) {
+          drinkEnergy();
+        } else if (currentOpponent.gimmick === 'charge_attack' && distance > 200 && Math.random() < 0.2) {
+          chargeAttack();
+        } else if (currentOpponent.gimmick === 'combo_attack' && Math.random() < 0.05) {
+          comboAttack();
+        } else if (distance < 150) {
+          opponentPunch();
+        } else {
+          moveTowardsPlayer();
+        }
+        
+        setTimeout(opponentAction, baseInterval + Math.random() * 500);
+      }
+      
+      setTimeout(opponentAction, baseInterval);
+    }
+    
+    function opponentPunch() {
+      if (gameState.opponentKnockedDown || !gameState.opponentCanAct) return;
+      
+      const settings = difficultySettings[gameState.difficulty];
+      const leftGlove = document.getElementById('opponent-left-glove');
+      leftGlove.style.transform = 'translateX(-30px)';
+      
+      // Check if player is ducking
+      if (!gameState.isDucking && !gameState.playerKnockedDown) {
+        const damage = Math.floor((8 + Math.random() * 7) * settings.damageMultiplier);
+        gameState.playerHP -= damage;
+        
+        const player = document.getElementById('player');
+        player.classList.add('shake');
+        setTimeout(() => player.classList.remove('shake'), 300);
+        
+        updateHUD();
+        
+        if (gameState.playerHP <= 0) {
+          playerKnockdown();
+        }
+      }
+      
+      setTimeout(() => {
+        leftGlove.style.transform = 'translateX(0)';
+      }, 200);
+    }
+    
+    function drinkEnergy() {
+      gameState.opponentIsDrinking = true;
+      gameState.opponentCanAct = false;
+      
+      const energyDrink = document.getElementById('energy-drink');
+      const opponent = document.getElementById('opponent');
+      
+      energyDrink.classList.remove('hidden');
+      opponent.classList.add('drinking');
+      
+      showActionText('ENERGY BOOST!');
+      
+      setTimeout(() => {
+        gameState.opponentHP = Math.min(gameState.opponentMaxHP, gameState.opponentHP + 50);
+        updateHUD();
+        energyDrink.classList.add('hidden');
+        opponent.classList.remove('drinking');
+        gameState.opponentIsDrinking = false;
+        gameState.opponentCanAct = true;
+      }, 1000);
+    }
+    
+    function chargeAttack() {
+      gameState.opponentIsCharging = true;
+      gameState.opponentCanAct = false;
+      
+      const opponent = document.getElementById('opponent');
+      showActionText('CHARGE!');
+      
+      opponent.style.transition = 'transform 0.8s ease-in';
+      opponent.style.transform = 'translateX(-300px)';
+      
+      setTimeout(() => {
+        if (!gameState.isDucking && !gameState.playerKnockedDown && gameState.opponentIsCharging) {
+          const settings = difficultySettings[gameState.difficulty];
+          gameState.playerHP -= Math.floor(25 * settings.damageMultiplier);
+          
+          const player = document.getElementById('player');
+          player.classList.add('shake');
+          setTimeout(() => player.classList.remove('shake'), 300);
+          
+          updateHUD();
+          
+          if (gameState.playerHP <= 0) {
+            playerKnockdown();
+          }
+        }
+        
+        opponent.style.transform = '';
+        gameState.opponentIsCharging = false;
+        gameState.opponentCanAct = true;
+      }, 800);
+    }
+    
+    function comboAttack() {
+      gameState.opponentIsCombo = true;
+      gameState.opponentCanAct = false;
+      
+      showActionText('COMBO ATTACK!');
+      
+      const player = document.getElementById('player');
+      player.classList.add('combo-receiving');
+      
+      const settings = difficultySettings[gameState.difficulty];
+      let hits = 0;
+      const comboInterval = setInterval(() => {
+        if (!gameState.isDucking && !gameState.playerKnockedDown && hits < 100) {
+          gameState.playerHP -= Math.floor(0.5 * settings.damageMultiplier);
+          hits++;
+          updateHUD();
+          
+          if (gameState.playerHP <= 0) {
+            clearInterval(comboInterval);
+            playerKnockdown();
+          }
+        } else {
+          hits++;
+        }
+        
+        if (hits >= 100) {
+          clearInterval(comboInterval);
+          player.classList.remove('combo-receiving');
+          gameState.opponentIsCombo = false;
+          gameState.opponentCanAct = true;
+        }
+      }, 50);
+    }
+    
+    function moveTowardsPlayer() {
+      gameState.opponentX -= 20;
+      const opponent = document.getElementById('opponent');
+      opponent.style.transform = `translateX(${-20}px)`;
+      setTimeout(() => {
+        opponent.style.transform = '';
+        gameState.opponentX += 10; // Partial reset for smooth movement
+      }, 100);
+    }
+    
+    function playerKnockdown() {
+      gameState.playerKnockedDown = true;
+      gameState.canAct = false;
+      gameState.playerKnockdowns++;
+      
+      const player = document.getElementById('player');
+      player.classList.add('knocked-down');
+      
+      showActionText('DOWN!');
+      updateHUD();
+      
+      if (gameState.playerKnockdowns >= 3) {
+        setTimeout(() => {
+          gameState.isInFight = false;
+          document.getElementById('defeat-message').textContent = `You were knocked out by ${opponents[gameState.currentOpponent].name}!`;
+          showScreen('defeat-screen');
+        }, 1500);
+      } else {
+        setTimeout(() => {
+          player.classList.remove('knocked-down');
+          gameState.playerHP = 50;
+          gameState.playerKnockedDown = false;
+          gameState.canAct = true;
+          updateHUD();
+        }, 2000);
+      }
+    }
+    
+    function nextOpponent() {
+      gameState.currentOpponent++;
+      showPreFight();
+    }
+    
+    function retryFight() {
+      gameState.playerKnockdowns = 0;
+      gameState.opponentKnockdowns = 0;
+      showPreFight();
+    }
+    
+    function togglePause() {
+      gameState.isPaused = !gameState.isPaused;
+      const pauseOverlay = document.getElementById('pause-overlay');
+      if (gameState.isPaused) {
+        pauseOverlay.classList.remove('hidden');
+        pauseOverlay.classList.add('flex');
+      } else {
+        pauseOverlay.classList.add('hidden');
+        pauseOverlay.classList.remove('flex');
+      }
+    }
+    
+    function resumeGame() {
+      gameState.isPaused = false;
+      document.getElementById('pause-overlay').classList.add('hidden');
+      document.getElementById('pause-overlay').classList.remove('flex');
+    }
+    
+    function quitToMenu() {
+      gameState.isInFight = false;
+      gameState.isPaused = false;
+      showScreen('main-menu');
+    }
+    
+    // Game loop for movement
+    let lastTime = 0;
+    function gameLoop(timestamp) {
+      if (!gameState.isInFight) return;
+      
+      const deltaTime = timestamp - lastTime;
+      lastTime = timestamp;
+      
+      if (!gameState.isPaused && gameState.canAct && !gameState.playerKnockedDown) {
+        const speed = 3;
+        const player = document.getElementById('player');
+        
+        if (keys['a'] || keys['arrowleft']) {
+          gameState.playerX = Math.max(0, gameState.playerX - speed);
+          player.style.left = gameState.playerX + 'px';
+        }
+        if (keys['d'] || keys['arrowright']) {
+          gameState.playerX = Math.min(350, gameState.playerX + speed);
+          player.style.left = gameState.playerX + 'px';
+        }
+      }
+      
+      requestAnimationFrame(gameLoop);
+    }
+    
+    // Initialize
+    showScreen('main-menu');
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c8d91e427f041e9',t:'MTc3MDI0Mzc3OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
